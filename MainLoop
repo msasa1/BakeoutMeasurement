@@ -1,0 +1,93 @@
+import Library
+from datetime import datetime
+import time
+
+initial = datetime.now()
+
+m = str(initial.month)
+d = str(initial.day)
+y = str(initial.year)
+
+if initial.month < 10:
+    m = "0" + m
+if initial.day < 10:
+    d = "0" + d
+
+filename = m + "_" + d + "_" + y + ".csv"
+
+day1 = initial.day
+
+x = input("Bakeout? ")
+t = input("Time Range? Type in minutes. ")
+t = int(t)
+k = input("Labview measurement interval? Type in seconds/measurement ")
+k = int(k)
+
+start = str( Library.Start(filename) )
+hour1 = start[:2]
+minute1 = start[3:5]
+
+if x[:1] == 'y' or 'Y':
+
+    today = datetime.now()
+
+    while ( (today.month*30 + today.day) - (initial.month*30 + initial.day) ) < 5:
+
+        today = datetime.now()
+
+        if today.day == day1:
+            timeRange = (today.hour*60 + today.minute) - (hour1*60 + minute1)
+            if timeRange < t:
+                try:
+                    Library.TGraph(filename, 0, k, "Tgraph1.png")
+                    Library.PGraph(filename, 0, k, "Pgraph1.png")
+                    Library.SendData("Tgraph1.png")
+                    Library.SendData("Pgraph1.png")
+                    time.sleep(60)
+                except:
+                    Library.SendData("noFile.png")
+                    time.sleep(60)
+
+            else:
+                try:
+                    Library.TGraph(filename, 0, k, "Tgraph1.png")
+                    Library.PGraph(filename, 0, k, "Pgraph1.png")
+                    Library.SendData("Tgraph1.png")
+                    Library.SendData("Pgraph1.png")
+
+                    Library.TGraph(filename, timeRange - t, k, "Tgraph2.png")
+                    Library.PGraph(filename, timeRange - t, k, "Pgraph2.png")
+                    Library.SendData("Tgraph2.png")
+                    Library.SendData("Pgraph2.png")
+                    time.sleep(60)
+                except:
+                    Library.SendData("noFile.png")
+
+        else:
+            try:
+                yesterday = 24 * 60 - (hour1 * 60 + minute1)
+                Library.TGraph(filename, 0, k, "Tgraph3.png")
+                Library.PGraph(filename, 0, k, "Pgraph3.png")
+                Library.SendData("Tgraph3.png")
+                Library.SendData("Pgraph3.png")
+                Library.TGraph(filename, yesterday - t, k, "Tgraph4.png")
+                Library.PGraph(filename, yesterday - t, k, "Pgraph4.png")
+                Library.SendData("Tgraph4.png")
+                Library.SendData("Pgraph4.png")
+            except:
+                Library.SendData("noFile.png")
+
+            day1 = today.day
+            hour1 = 0
+            minute1 = 0
+
+            m = str(today.month)
+            d = str(today.day)
+            y = str(today.year)
+
+            if today.month < 10:
+                m = "0" + m
+            if today.day < 10:
+                d = "0" + d
+
+            filename = m + "_" + d + "_" + y + ".csv"
