@@ -1,0 +1,104 @@
+import csv
+import matplotlib.pyplot as plt
+import paramiko
+
+def Start(filename):
+    ref = []
+    with open(filename, 'r') as f:
+        data = csv.reader(f)
+        f.__next__()
+        for col in data:
+            ref.append(str(col[1]))
+    return ref[0]
+
+def PGraph(filename, timeRange, interval, name):
+    time = []
+    ref = []
+    pressure = []
+    with open(filename, 'r') as f:
+        data = csv.reader(f)
+
+        p = 60/interval
+        i = 0
+        while i < (int(timeRange*p) + 1):
+            f.__next__()
+            i = i + 1
+
+        for col in data:
+            time.append(float(col[0]))
+            ref.append(str(col[1]))
+            pressure.append(float(col[2]))
+
+    fig = plt.figure()
+    plt.plot(time, pressure)
+    plt.xlabel('Time')
+    plt.ylabel('Pressure')
+    plt.title('Pressure vs. Time')
+    plt.suptitle('initial: ' + ref[0] + ' current: ' + ref[len(ref) - 1])
+    plt.legend(['pressure'], loc='upper right')
+
+    plt.text(time[int(len(time)/1.5)], pressure[int(len(pressure)/1.5)], str(pressure[len(pressure)-1]) + 'torr' )
+
+    fig.savefig(name)
+    #plt.show()
+    f.close()
+
+def TGraph(filename, timeRange, interval, name):
+    time = []
+    ref = []
+    tc1 = []
+    tc2 = []
+    tc3 = []
+    tc4 = []
+    tc5 = []
+    with open(filename, 'r') as f:
+        data = csv.reader(f)
+
+        p = 60 / interval
+        i = 0
+        while i < (int(timeRange * p) + 1):
+            f.__next__()
+            i = i + 1
+
+        for col in data:
+            time.append(float(col[0]))
+            ref.append(str(col[1]))
+            tc1.append(float(col[3]))
+            tc2.append(float(col[4]))
+            tc3.append(float(col[5]))
+            tc4.append(float(col[6]))
+            tc5.append(float(col[7]))
+
+    fig = plt.figure()
+
+    plt.plot(time, tc1, time, tc2, time, tc3, time, tc4, time, tc5)
+    plt.xlabel('Time')
+    plt.ylabel('Temperature')
+    plt.title('Temperature vs. Time')
+    plt.suptitle('initial: ' + ref[0] + ' current: ' + ref[len(ref) - 1])
+    plt.legend(['TC1', 'TC2', 'TC3', 'TC4', 'TC5'], loc='upper left')
+
+    plt.text(time[int(len(time)/1.5)], tc1[int(len(tc1)/1.5)], 'TC1 = ' + str(tc1[len(tc1) - 1]))
+    plt.text(time[int(len(time)/1.5)], tc2[int(len(tc2)/1.5)], 'TC2 = ' + str(tc2[len(tc2) - 1]))
+    plt.text(time[int(len(time)/1.5)], tc3[int(len(tc3)/1.5)], 'TC3 = ' + str(tc3[len(tc3) - 1]))
+    plt.text(time[int(len(time)/1.5)], tc4[int(len(tc4)/1.5)], 'TC4 = ' + str(tc4[len(tc4) - 1]))
+    plt.text(time[int(len(time)/1.5)], tc5[int(len(tc5)/1.5)], 'TC5 = ' + str(tc5[len(tc5) - 1]))
+
+    fig.savefig(name)
+    #plt.show()
+    f.close()
+
+
+def SendData(filename):
+    hostname = "holly.acs.brockport.edu"
+    port = 22
+    try:
+        t = paramiko.Transport((hostname, port))
+        t.connect(username="TheUserName", password="ThePassword")
+        sftp = paramiko.SFTPClient.from_transport(t)
+        dirlist = sftp.listdir('.')
+        print("DIR List is ", dirlist)
+        sftp.put("test.txt", "public_html/test.txt")
+        t.close()
+    except Exception as e:
+        print('*** Caught exception: %s: %s' % (e.__class__, e))
